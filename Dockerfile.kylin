@@ -1,6 +1,8 @@
 ARG KYLIN_BASE_IMAGE=macrosan/kylin:v10-sp3-2403
 FROM ${KYLIN_BASE_IMAGE}
 
+ARG NODE_VERSION=22.21.1
+
 ENV NODE_ENV=production \
     PORT=7003 \
     HOST=0.0.0.0 \
@@ -39,6 +41,13 @@ RUN yum update -y && \
       glibc-langpack-en \
       glibc-langpack-zh && \
     yum clean all
+
+RUN curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-arm64.tar.xz" -o /tmp/node.tar.xz && \
+    tar -xJf /tmp/node.tar.xz -C /usr/local --strip-components=1 && \
+    rm -f /tmp/node.tar.xz && \
+    node --version && \
+    npm --version && \
+    npm install -g node-gyp@9.4.1
 
 # Force source builds for any native npm extension. The current service avoids
 # canvas entirely, but these knobs protect future dependency changes.
