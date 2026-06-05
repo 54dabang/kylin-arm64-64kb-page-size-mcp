@@ -2,6 +2,7 @@
 set -euo pipefail
 
 TAG="${TAG:-v0.1.0-page64k}"
+KYLIN_BASE_IMAGE="${KYLIN_BASE_IMAGE:-macrosan/kylin:v10-sp3-2403}"
 IMAGE="kylin-offline-mcp-echarts:${TAG}-arm64-page64k"
 OUT_DIR="${OUT_DIR:-dist}"
 TAR_FILE="${OUT_DIR}/kylin-offline-mcp-echarts-${TAG}-linux-arm64-page64k.tar.gz"
@@ -19,6 +20,7 @@ fi
 
 docker build \
   --platform linux/arm64 \
+  --build-arg KYLIN_BASE_IMAGE="${KYLIN_BASE_IMAGE}" \
   -f Dockerfile.kylin \
   -t "${IMAGE}" .
 

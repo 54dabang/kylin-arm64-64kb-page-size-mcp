@@ -8,13 +8,16 @@ ECharts SVG SSR -> rsvg-convert PNG -> /charts static URL -> MCP SSE JSON text
 
 项目没有依赖 `mcp-echarts` npm 包本身，也没有依赖 `@napi-rs/canvas` 或 `canvas`。这是为了避开 Kylin ARM64 + 64KB `PAGE_SIZE` 下常见的 npm 预编译原生包 4K 对齐问题。
 
-## 强制基础镜像和系统依赖
+## Kylin 基础镜像和系统依赖
 
-最终 Kylin Dockerfile 固定使用：
+Kylin Dockerfile 默认参考 `54dabang/gpt-vis-mcp` 的基础镜像：
 
 ```dockerfile
-FROM kylin-server-arm64:v10
+ARG KYLIN_BASE_IMAGE=macrosan/kylin:v10-sp3-2403
+FROM ${KYLIN_BASE_IMAGE}
 ```
+
+GitHub Actions 的 `kylin_base_image` 输入可以覆盖为 `kylin-server-arm64:v10`。如果目标 runner 能访问麒麟官方镜像，可在手动运行 workflow 时填入该镜像。
 
 系统依赖必须先安装：
 
@@ -71,7 +74,7 @@ aarch64
 65536
 ```
 
-确保 runner 的 Docker 环境能访问 `kylin-server-arm64:v10` 后，在 GitHub Actions 里手动运行：
+确保 runner 的 Docker 环境能访问所选 `kylin_base_image` 后，在 GitHub Actions 里手动运行：
 
 ```text
 .github/workflows/release-kylin-arm64-page64k.yml

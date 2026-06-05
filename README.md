@@ -89,13 +89,14 @@ test "$(getconf PAGE_SIZE)" = "65536"
 
 面向 Kylin ARM64 + 64KB `PAGE_SIZE` 的最终发布，推荐使用 self-hosted 64K runner workflow。
 
-Kylin 打包镜像强制使用：
+Kylin 打包默认参考 `54dabang/gpt-vis-mcp` 的 Kylin 基础镜像：
 
 ```dockerfile
-FROM kylin-server-arm64:v10
+ARG KYLIN_BASE_IMAGE=macrosan/kylin:v10-sp3-2403
+FROM ${KYLIN_BASE_IMAGE}
 ```
 
-并且必须先通过 `yum` 安装 `nodejs`、`npm`、`gcc`、`gcc-c++`、`make`、`pkgconfig`、`cairo-devel`、`libjpeg-turbo-devel`、`libpng-devel`、`pango-devel`、`giflib-devel`、`librsvg2-devel`、`librsvg2-tools` 等系统依赖，再执行 `npm ci`。如果 GitHub runner 无法拉取 `kylin-server-arm64:v10`，需要先在 runner 的 Docker 环境中配置可访问的麒麟官方镜像源。
+GitHub Actions 的 `kylin_base_image` 输入可以覆盖为 `kylin-server-arm64:v10`。无论使用哪个 Kylin/vendor 基础镜像，都必须先通过 `yum` 安装 `nodejs`、`npm`、`gcc`、`gcc-c++`、`make`、`pkgconfig`、`cairo-devel`、`libjpeg-turbo-devel`、`libpng-devel`、`pango-devel`、`giflib-devel`、`librsvg2-devel`、`librsvg2-tools` 等系统依赖，再执行 `npm ci`。
 
 手动运行时输入 tag，例如 `v0.1.0`。成功后 Release asset 名称：
 
@@ -137,9 +138,10 @@ curl http://127.0.0.1:7003/health
 
 本项目没有运行时依赖 `mcp-echarts` npm 包，因为 `mcp-echarts@0.7.1` 直接依赖 `@napi-rs/canvas`。这里保留兼容的工具定义和 ECharts option 生成方式，但渲染路径完全替换为 SVG SSR + 系统 `rsvg-convert`。
 
-`Dockerfile.kylin` 仍设置：
+`Dockerfile.kylin` 仍设置 64K 链接和 npm 源码编译约束：
 
 ```dockerfile
+ENV LDFLAGS="-Wl,-z,max-page-size=65536"
 ENV npm_config_build_from_source=true
 ENV npm_config_canvas_build_from_source=true
 ```

@@ -7,6 +7,10 @@ on:
         description: Release tag, for example v0.1.0-page64k
         required: true
         default: v0.1.0-page64k
+      kylin_base_image:
+        description: Kylin/vendor ARM64 base image
+        required: true
+        default: macrosan/kylin:v10-sp3-2403
 
 permissions:
   contents: write
@@ -27,6 +31,7 @@ jobs:
         run: |
           docker build \
             --platform linux/arm64 \
+            --build-arg KYLIN_BASE_IMAGE="${{ inputs.kylin_base_image }}" \
             -f Dockerfile.kylin \
             -t kylin-offline-mcp-echarts:${{ inputs.tag }}-arm64-page64k .
 
@@ -52,6 +57,9 @@ jobs:
 
             Runtime path:
             ECharts SVG SSR -> rsvg-convert PNG -> /charts static URL -> MCP SSE JSON text.
+
+            Base image:
+            `${{ inputs.kylin_base_image }}`
 
             Download:
             https://github.com/${{ github.repository }}/releases/download/${{ inputs.tag }}/kylin-offline-mcp-echarts-${{ inputs.tag }}-linux-arm64-page64k.tar.gz

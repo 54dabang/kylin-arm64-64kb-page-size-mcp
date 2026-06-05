@@ -7,6 +7,10 @@ on:
         description: Release tag, for example v0.1.0
         required: true
         default: v0.1.0
+      kylin_base_image:
+        description: Kylin/vendor ARM64 base image
+        required: true
+        default: macrosan/kylin:v10-sp3-2403
 
 permissions:
   contents: write
@@ -19,24 +23,33 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          install: true
 
-      - name: Build Kylin ARM64 image
-        run: |
-          docker build \
-            --platform linux/arm64 \
-            -f Dockerfile.kylin \
-            -t kylin-offline-mcp-echarts:${{ inputs.tag }}-arm64 .
+      - name: Build Kylin ARM64 image tar
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.kylin
+          platforms: linux/arm64
+          build-args: |
+            KYLIN_BASE_IMAGE=${{ inputs.kylin_base_image }}
+          tags: kylin-offline-mcp-echarts:${{ inputs.tag }}-arm64
+          outputs: type=docker,dest=kylin-offline-mcp-echarts-${{ inputs.tag }}-linux-arm64.tar
+          provenance: false
+          sbom: false
 
       - name: Verify image platform and runtime
         run: |
+          docker load -i kylin-offline-mcp-echarts-${{ inputs.tag }}-linux-arm64.tar
           docker image inspect kylin-offline-mcp-echarts:${{ inputs.tag }}-arm64 --format '{{.Os}}/{{.Architecture}}'
           test "$(docker image inspect kylin-offline-mcp-echarts:${{ inputs.tag }}-arm64 --format '{{.Os}}/{{.Architecture}}')" = "linux/arm64"
           docker run --rm kylin-offline-mcp-echarts:${{ inputs.tag }}-arm64 node -e "const p=require('/app/package-lock.json'); const s=JSON.stringify(p); if (s.includes('@napi-rs/canvas') || s.includes('node_modules/canvas')) process.exit(1); console.log('no canvas native dependency')"
           docker run --rm kylin-offline-mcp-echarts:${{ inputs.tag }}-arm64 rsvg-convert --version
 
-      - name: Save Docker tar
+      - name: Compress and hash Docker tar
         run: |
-          docker save kylin-offline-mcp-echarts:${{ inputs.tag }}-arm64 | gzip -9 > kylin-offline-mcp-echarts-${{ inputs.tag }}-linux-arm64.tar.gz
+          gzip -9 kylin-offline-mcp-echarts-${{ inputs.tag }}-linux-arm64.tar
           sha256sum kylin-offline-mcp-echarts-${{ inputs.tag }}-linux-arm64.tar.gz > kylin-offline-mcp-echarts-${{ inputs.tag }}-linux-arm64.tar.gz.sha256
 
       - name: Create or update GitHub Release
@@ -49,6 +62,9 @@ jobs:
 
             Rendering path:
             ECharts SVG SSR -> rsvg-convert PNG -> /charts static URL -> MCP SSE JSON text.
+
+            Base image:
+            `${{ inputs.kylin_base_image }}`
 
             Download:
             https://github.com/${{ github.repository }}/releases/download/${{ inputs.tag }}/kylin-offline-mcp-echarts-${{ inputs.tag }}-linux-arm64.tar.gz
