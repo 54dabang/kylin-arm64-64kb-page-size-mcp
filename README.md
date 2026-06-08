@@ -55,14 +55,14 @@ curl -X POST http://127.0.0.1:7003/api/tools/generate_bar_chart \
   -H 'Content-Type: application/json' \
   -d '{
     "data": [
-      { "category": "类兴邦", "value": 9.70 },
-      { "category": "肖棋元", "value": 8.52 },
-      { "category": "刘晶晶", "value": 7.37 },
-      { "category": "庄宇飞", "value": 6.97 },
-      { "category": "张兆乾", "value": 6.41 },
-      { "category": "彭子瑞", "value": 5.01 }
+      { "category": "人员A", "value": 9.70 },
+      { "category": "人员B", "value": 8.52 },
+      { "category": "人员C", "value": 7.37 },
+      { "category": "人员D", "value": 6.97 },
+      { "category": "人员E", "value": 6.41 },
+      { "category": "人员F", "value": 5.01 }
     ],
-    "title": "报销金额排名前六名人员",
+    "title": "示例金额排名前六名人员",
     "axisXTitle": "人员姓名",
     "axisYTitle": "报销金额(万元)"
   }'
@@ -97,8 +97,8 @@ curl -O http://127.0.0.1:7003/charts/<上一步返回的png文件名>
 
 ```json
 {
-  "data": "[{\"category\": \"类兴邦\", \"value\": 9.70}, {\"category\": \"肖棋元\", \"value\": 8.52}, {\"category\": \"刘晶晶\", \"value\": 7.37}, {\"category\": \"庄宇飞\", \"value\": 6.97}, {\"category\": \"张兆乾\", \"value\": 6.41}, {\"category\": \"彭子瑞\", \"value\": 5.01}]",
-  "title": "报销金额排名前六名人员",
+  "data": "[{\"category\": \"人员A\", \"value\": 9.70}, {\"category\": \"人员B\", \"value\": 8.52}, {\"category\": \"人员C\", \"value\": 7.37}, {\"category\": \"人员D\", \"value\": 6.97}, {\"category\": \"人员E\", \"value\": 6.41}, {\"category\": \"人员F\", \"value\": 5.01}]",
+  "title": "示例金额排名前六名人员",
   "axisXTitle": "人员姓名",
   "axisYTitle": "报销金额(万元)"
 }
