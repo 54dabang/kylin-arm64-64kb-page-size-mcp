@@ -8,7 +8,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { config } from "./config.js";
-import { tools } from "./tools/index.js";
+import { toolMap, tools } from "./tools/index.js";
 
 function createServer() {
   const server = new McpServer({
@@ -153,6 +153,46 @@ function createApp() {
     immutable: false,
     maxAge: "1h",
   }));
+  app.post("/api/tools/:toolName", async (req, res) => {
+    const tool = toolMap.get(req.params.toolName);
+    if (!tool) {
+      res.status(404).json({
+        status: "error",
+        message: `Unknown tool: ${req.params.toolName}`,
+        availableTools: tools.map((item) => item.name),
+      });
+      return;
+    }
+
+    try {
+      const parsed = tool.inputSchema.parse(req.body ?? {});
+      const result = await tool.run(parsed);
+      const text = result?.content?.[0]?.text;
+      if (!text) {
+        res.status(500).json({
+          status: "error",
+          message: "Tool returned an empty response.",
+        });
+        return;
+      }
+
+      try {
+        const payload = JSON.parse(text);
+        res.json(payload);
+      } catch {
+        res.json({
+          status: "success",
+          tool: tool.name,
+          result: text,
+        });
+      }
+    } catch (error) {
+      res.status(400).json({
+        status: "error",
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
   app.get("/health", (_req, res) => {
     res.json({
       status: "healthy",
@@ -161,6 +201,7 @@ function createApp() {
       chartsDir: config.chartsDir,
       renderer: "echarts-svg-ssr+rsvg-convert",
       canvas: false,
+      httpToolEndpoint: "/api/tools/:toolName",
     });
   });
   return app;

@@ -35,6 +35,60 @@ http://127.0.0.1:7003/sse
 /messages
 /health
 /charts
+/api/tools/:toolName
+```
+
+## curl 直连 HTTP 测试
+
+除了 MCP SSE 外，也支持直接通过 HTTP 调用图表工具，适合 `curl`、脚本和容器冒烟测试。
+
+先检查服务：
+
+```bash
+curl http://127.0.0.1:7003/health
+```
+
+生成柱状图：
+
+```bash
+curl -X POST http://127.0.0.1:7003/api/tools/generate_bar_chart \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "data": [
+      { "category": "类兴邦", "value": 9.70 },
+      { "category": "肖棋元", "value": 8.52 },
+      { "category": "刘晶晶", "value": 7.37 },
+      { "category": "庄宇飞", "value": 6.97 },
+      { "category": "张兆乾", "value": 6.41 },
+      { "category": "彭子瑞", "value": 5.01 }
+    ],
+    "title": "报销金额排名前六名人员",
+    "axisXTitle": "人员姓名",
+    "axisYTitle": "报销金额(万元)"
+  }'
+```
+
+成功时会直接返回：
+
+```json
+{
+  "status": "success",
+  "chartUrl": "/charts/generate_bar_chart_1780000000000_abcd1234ef.png",
+  "imageFile": "/app/charts/generate_bar_chart_1780000000000_abcd1234ef.png",
+  "imageFormat": "png",
+  "size": {
+    "width": 800,
+    "height": 600,
+    "bytes": 30000,
+    "zoom": 2
+  }
+}
+```
+
+然后就可以直接访问图片：
+
+```bash
+curl -O http://127.0.0.1:7003/charts/<上一步返回的png文件名>
 ```
 
 ## 测试用例

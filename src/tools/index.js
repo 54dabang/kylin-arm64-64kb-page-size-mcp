@@ -588,6 +588,8 @@ export const tools = [
   generateTreeChartTool,
 ];
 
+export const toolMap = new Map(tools.map((tool) => [tool.name, tool]));
+
 function runLineLike({ axisXTitle, axisYTitle, data, height, showArea, showSymbol, smooth, stack, theme, title, width, outputType }, toolName) {
   const hasGroups = data.some((item) => item.group);
   let categories = [];
